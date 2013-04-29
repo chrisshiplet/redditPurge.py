@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import time, sys, json
 import requests
@@ -23,9 +23,9 @@ else:
 # Do login
 #
 
-head = {'User-Agent': 'reddit purge 0.1'}                                                                             
+head = {'User-Agent': 'redditPurge 0.1'}
+data = {'user': username, 'passwd': password, 'api_type': 'json'} 
 client = requests.session()
-data = {'user': username, 'passwd': password, 'api_type': 'json'}
 r = client.post('https://ssl.reddit.com/api/login', data=data, headers=head)
 
 # Check if login was successful & store modhash, otherwise exit
@@ -48,7 +48,7 @@ except:
 # Get first 100 things
 #
 
-print 'please wait while your things are fetched...'
+print '[ OK ] please wait while your things are fetched...'
 rUrl = 'http://www.reddit.com/user/'+username+'/overview.json?limit=100'
 r = client.get(rUrl, headers=head)
 
@@ -121,14 +121,19 @@ if r.json()['data']['after'] != None:
 # Now delete all the things!
 #
 
-print 'done fetching! you\'re sacrificing ' + str(karma) + ' karma today!'
-print 'now, delete all the things:'
+print ('[ OK ] done fetching. you\'re sacrificing ' + str(karma) + 
+       ' karma today! here we go:')
+
+count = 1
+count_max = len(things_list)
 
 for thing_id in things_list:
     # Try deleting the thing
     data = {'id': thing_id, 'uh': modhash}
     r = client.post('http://www.reddit.com/api/del', data=data, headers=head)
-    print '[ '+str(r.status_code)+' ] ' + thing_id
+    print ('[ ' + str(r.status_code) + ' ] ' + thing_id + 
+           ' (' + str(count) + '/' + str(count_max) + ')')
+    count += 1
 
     # Reddit's API rate limit is 2s
     time.sleep(2)
